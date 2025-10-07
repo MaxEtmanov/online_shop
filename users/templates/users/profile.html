@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div style="max-width:900px; margin:10px auto; background:white; padding:20px; border-radius:8px;">
+    <h2>Профиль пользователя</h2>
+
+    <p><strong>Имя пользователя:</strong> {{ user.username }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+
+    {# Если есть связанная модель UserProfile (related_name='profile') #}
+    {% if user.profile %}
+        {% if user.profile.phone_number %}
+            <p><strong>Телефон:</strong> {{ user.profile.phone_number }}</p>
+        {% endif %}
+        {% if user.profile.address %}
+            <p><strong>Адрес:</strong> {{ user.profile.address }}</p>
+        {% endif %}
+    {% endif %}
+
+    <p><a href="{% url 'orders:order_list' %}">Мои заказы</a></p>
+</div>
+{% endblock %}

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Мой магазин{% endblock %}</title>
+    <style>
+        /* === Цветовая палитра === */
+        :root {
+            --primary: #1E3A8A;       /* Глубокий синий */
+            --secondary: #3B82F6;     /* Голубой акцент */
+            --accent: #22C55E;        /* Яркий зеленый для кнопок */
+            --text: #333;
+            --muted: #666;
+            --bg: #F8FAFC;            /* Светлый фон */
+            --white: #fff;
+        }
+
+        /* === Сброс и общие стили === */
+        html, body { margin:0; padding:0; height:100%; font-family:'Arial', sans-serif; background:var(--bg); color:var(--text); }
+        a { text-decoration: none; color: inherit; transition: all 0.2s; }
+        a:hover { color: var(--accent); }
+        button { cursor:pointer; font-weight:600; }
+
+        /* === Header === */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: var(--white);
+            padding: 16px 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .site-header {
+            max-width: 1100px;
+            margin:0 auto;
+            display:flex;
+            align-items:center;
+            gap:20px;
+        }
+        .site-title {
+            font-size: 24px;
+            font-weight: 700;
+            flex:1;
+        }
+        .site-nav { display:flex; gap:12px; align-items:center; }
+        .site-nav a {
+            padding:8px 12px;
+            border-radius:8px;
+            display:inline-flex;
+            align-items:center;
+            gap:6px;
+            transition: all 0.2s ease;
+        }
+        .site-nav a:hover { background: rgba(255,255,255,0.15); }
+
+        /* === Cart badge === */
+        .cart-badge { position: relative; display:inline-block; }
+        .cart-count {
+            position: absolute;
+            top:-8px;
+            right:-8px;
+            background:#ff6b6b;
+            color:white;
+            font-size:11px;
+            padding:2px 6px;
+            border-radius:12px;
+            font-weight:700;
+        }
+
+        /* === Messages === */
+        .messages-container { max-width:1100px; margin:16px auto; padding:0 20px; }
+        .msg { padding:10px 16px; border-radius:8px; margin-bottom:10px; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
+        .msg.success { background:#e6ffed; color:#11662b; border:1px solid #b7e6bd; }
+        .msg.error { background:#ffecec; color:#8a1f1f; border:1px solid #f2c2c2; }
+        .msg.warning { background:#fff7e6; color:#6b4b00; border:1px solid #ffe7a8; }
+        .msg.info { background:#e8f6ff; color:#0b4f73; border:1px solid #cfeeff; }
+
+        /* === Main container === */
+        main { max-width:1100px; margin:24px auto; padding:0 20px; }
+
+        /* === Footer === */
+        footer {
+            background: var(--primary);
+            color: var(--white);
+            padding:16px 20px;
+            text-align:center;
+            margin-top:40px;
+        }
+
+        /* === Категории === */
+        .category-chip {
+            display:inline-block;
+            padding:6px 14px;
+            border-radius:20px;
+            background:#EFF6FF;
+            color: var(--primary);
+            font-weight:600;
+            margin-right:8px;
+            margin-bottom:8px;
+            transition: all 0.2s ease;
+        }
+        .category-chip:hover {
+            background: var(--secondary);
+            color:white;
+            transform: translateY(-2px);
+        }
+        .category-selected {
+            background: var(--primary);
+            color:white;
+        }
+
+        /* === Карточки товаров === */
+        .product-card {
+            background:white;
+            border-radius:12px;
+            box-shadow:0 6px 18px rgba(0,0,0,0.08);
+            overflow:hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display:flex;
+            gap:16px;
+            margin-bottom:24px;
+            padding:12px;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow:0 12px 24px rgba(0,0,0,0.15);
+        }
+        .product-card img {
+            width:150px;
+            height:auto;
+            border-radius:8px;
+            transition: transform 0.3s;
+        }
+        .product-card:hover img { transform: scale(1.05); }
+        .product-info { flex:1; display:flex; flex-direction:column; justify-content:space-between; }
+        .product-info h3 { margin:0 0 6px 0; color: var(--primary); }
+        .product-info p { margin:0 0 8px 0; color: var(--muted); }
+
+        /* === Кнопки в карточках === */
+        .btn-add {
+            background: linear-gradient(135deg, #22C55E, #16A34A);
+            border:none;
+            padding:8px 16px;
+            color:white;
+            font-weight:600;
+            border-radius:8px;
+            transition: all 0.2s ease;
+        }
+        .btn-add:hover {
+            background: linear-gradient(135deg, #16A34A, #15803D);
+            transform: translateY(-2px);
+        }
+        .btn-disabled {
+            background:#ccc;
+            color:#666;
+            cursor:not-allowed;
+        }
+
+        /* Accessibility helper */
+        .visually-hidden { position:absolute!important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+    </style>
+</head>
+<body>
+    <header>
+      <div class="site-header">
+        <h1 class="site-title"><a href="{% url 'home' %}" style="color:inherit;">Мой магазин</a></h1>
+        <nav class="site-nav">
+          {% if user.is_authenticated %}
+            <a href="{% url 'users:profile' %}" title="Профиль">Профиль</a>
+            <a class="cart-badge" href="{% url 'orders:cart_view' %}">Корзина
+                {% if cart_count %}
+                    <span class="cart-count">{{ cart_count }}</span>
+                {% endif %}
+            </a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+            {% csrf_token %}
+                <button type="submit" class="btn-add">Выйти</button>
+            </form>
+          {% else %}
+            <a href="{% url 'users:signup' %}" class="btn-add">Регистрация</a>
+            <a href="{% url 'login' %}" class="btn-add">Вход</a>
+            <a href="{% url 'products:list' %}">Каталог</a>
+          {% endif %}
+        </nav>
+      </div>
+    </header>
+
+    {% if messages %}
+      <div class="messages-container" role="status" aria-live="polite">
+        {% for message in messages %}
+          <div class="msg {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <main>
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        &copy; {{ now|date:"Y" }} Мой магазин
+    </footer>
+</body>
+</html>
