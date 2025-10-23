@@ -8,7 +8,6 @@
 <!-- Список категорий -->
 <nav style="margin-bottom: 20px;">
     <strong>Категории:</strong>
-    <a href="{% url 'products:list' %}" style="color: black; margin-right: 10px;">Все</a>
 
     {% for category in categories %}
         <a href="{% url 'products:by_category' category.id %}"
